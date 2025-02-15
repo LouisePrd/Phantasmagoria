@@ -1,16 +1,66 @@
-body {
-    margin: 0;
-    padding: 0;
+@font-face {
+    font-family: 'Nopa';
+    src: url('../fonts/Nopa.ttf') format('truetype');
 }
 
 * {
     box-sizing: border-box;
     background-color: #2b3059;
+    font-family: 'Roboto', sans-serif;
+    color: #F7CCBC;
+    font-size: 1.2rem;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+}
+
+h1 {
+    font-size: 1.3rem;
+    font-family: 'Nopa', sans-serif;
+    color: #535DA4;
+    margin: 0;
+    margin-left: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+#container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
 }
 
 #script {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+}
+
+#scriptInGame {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    min-height: 0;
+    padding: 0;
+    opacity: 0;
+    transition: opacity 0.3s ease, padding 0.3s ease;
+}
+
+#scriptInGame.show {
+    margin-top: 1rem;
+    padding: 1rem;
+    opacity: 1;
+    border-radius: 0.5rem;
+    box-shadow: 0 0 0.5rem #535DA4;
+    text-align: center;
+}
+
+
+#button {
+    display: none;
 }
