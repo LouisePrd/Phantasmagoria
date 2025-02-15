@@ -1,23 +1,72 @@
 import * as THREE from "three";
 import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
-import { makeNoise2D } from "open-simplex-noise";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+
 
 // Initialisation
 const scene = new THREE.Scene();
-const renderer = new THREE.WebGLRenderer();
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+var mixer                = undefined; 
+var Player_anim_IDLE     = undefined;
+
+const particleGeometry = new THREE.BufferGeometry();
+const particleCount = 150;
+const positions = new Float32Array(particleCount * 3);
+
+let textMesh;
+let textScale = 1.0;
+var duck = undefined;
+
+const gltfLoader = new GLTFLoader();
+gltfLoader.load("/assets/duck.glb", function (gltf) {
+    mixer = new THREE.AnimationMixer( gltf.scene );
+    Player_anim_IDLE = mixer.clipAction( gltf.animations[ 1 ] );
+    Player_anim_IDLE.play();
+    duck = gltf.scene;
+    duck.position.set(0, 0, 0);
+    duck.scale.set(0.5, 0.5, 0.5);
+    duck.rotation.y = 1.5;
+    scene.add(duck);
+} );
+
+for (let i = 0; i < particleCount * 3; i++) {
+  positions[i] = (Math.random() - 0.5) * 5;
+}
+
+particleGeometry.setAttribute(
+  "position",
+  new THREE.BufferAttribute(positions, 3)
+);
+const particleMaterial = new THREE.PointsMaterial({
+  color: 0xffc0cb,
+  size: 1.5,
+  transparent: true,
+  opacity: 0.5,
+  depthTest: true,
+  blending: THREE.AdditiveBlending,
+});
+
+const particles = new THREE.Points(particleGeometry, particleMaterial);
+scene.add(particles);
+
+renderer.setClearColor(0x2b3059);
 renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 document.body.appendChild(renderer.domElement);
 
 const aspect = window.innerWidth / window.innerHeight;
 const camera = new THREE.OrthographicCamera(
   -aspect * 1.5, // Left
-  aspect * 1.5,  // Right
-  1.7,           // Top
-  -1.5,          // Bottom
-  0.1,           // Near
-  100            // Far
+  aspect * 1.5, // Right
+  1.9, // Top
+  -1.5, // Bottom
+  0.1, // Near
+  100 // Far
 );
+//const camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 100);
+//const camera = new THREE.PerspectiveCamera(155, aspect, 0.1, 500);
+
 
 camera.position.set(0, 0, 1);
 camera.lookAt(0, 0, 0);
@@ -30,75 +79,42 @@ scene.add(light);
 const ambientLight = new THREE.AmbientLight(0x404040);
 scene.add(ambientLight);
 
-
 const loader = new FontLoader();
-loader.load(
-  "https://threejs.org/examples/fonts/helvetiker_regular.typeface.json",
-  (font) => {
-    const textGeometry = new TextGeometry("phantasmagoria", {
-      font: font,
-      size: .1, // Taille du texte
-      height: 0.3, // Épaisseur
-      curveSegments: 12,
-      bevelEnabled: false,
-    });
+loader.load("/fonts/Nopa1_Regular.json", (font) => {
+  const textGeometry = new TextGeometry("phantasmagoria", {
+    font: font,
+    size: 0.8,
+    height: 0.3,
+    curveSegments: 32,
+    bevelEnabled: false,
+  });
 
+  textGeometry.center();
+  const textMaterial = new THREE.MeshStandardMaterial({
+    color: 0xd05cbf,
+    side: THREE.DoubleSide,
+    roughness: 0.2,
+  });
 
-    const textMaterial = new THREE.MeshStandardMaterial({ 
-        color: 0x85AFAB,
-        side: THREE.DoubleSide
-      });
-      
+  textMesh = new THREE.Mesh(textGeometry, textMaterial);
+  textMesh.position.set(0, 1.5, 1);
+  scene.add(textMesh);
 
-    const textMesh = new THREE.Mesh(textGeometry, textMaterial);
-    textGeometry.center();
-    textMesh.position.set(0, 1.5, 1);
+});
 
-    scene.add(textMesh);
-  }
-);
-
-const amplitude = 1;
-const segments = 200;
-let width = window.innerWidth / 100 + 1;
-
-const noise2D = makeNoise2D(Date.now());
-
-let geometry, sineWave;
-function createWave() {
-  const points = new Float32Array((segments + 1) * 3);
-
-  for (let i = 0; i <= segments; i++) {
-    let x = (i / segments) * width - width / 2;
-    let y = 0;
-    points.set([x, y, 0], i * 3);
-  }
-
-  geometry = new THREE.BufferGeometry();
-  geometry.setAttribute("position", new THREE.BufferAttribute(points, 3));
-  const material = new THREE.LineBasicMaterial({ color: 0x535DA4 });
-
-  if (sineWave) scene.remove(sineWave);
-  sineWave = new THREE.Line(geometry, material);
-  scene.add(sineWave);
-}
-
-createWave();
-
-let time = 0;
+const clock = new THREE.Clock();
 function animate() {
   requestAnimationFrame(animate);
-  time += 0.003;
-
-  const position = geometry.attributes.position.array;
-  for (let i = 0; i <= segments; i++) {
-    let x = (i / segments) * width - width / 2;
-    let y = noise2D(x * 0.2, time) * amplitude;
-    position[i * 3 + 1] = y;
+  particles.rotation.y += 0.002;
+  if (textScale > 0.3) { 
+    textScale -= 0.005; 
+    textMesh.scale.set(textScale, textScale, textScale);
   }
 
-  geometry.attributes.position.needsUpdate = true;
-  renderer.setClearColor(0xF7CCBC);
+  if (mixer) {
+    mixer.update(clock.getDelta());
+}
+
   renderer.render(scene, camera);
 }
 
@@ -109,7 +125,4 @@ window.addEventListener("resize", () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
-
-  width = window.innerWidth / 100;
-  createWave();
 });
