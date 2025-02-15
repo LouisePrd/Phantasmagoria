@@ -1,16 +1,49 @@
-function generateSubtitles() {
-  const subtitles = [
-    "48h Game Jam 2024",
-    "Thème : No one can see you",
-    "Contraintes :  trichromie, passages secrets"
-  ];
+document.addEventListener("DOMContentLoaded", () => {
+  const button = document.getElementById("button");
+  let clicked = false;
 
-  const subtitleContainer = document.getElementById("script");
-  subtitles.forEach((subtitle, index) => {
+  function generateSubtitles() {
+    launchMusic();
+    const subtitles = [
+      "GAMEJAM 2025",
+      "48H POUR CREER UN JEU VIDEO",
+      "THEME : NO ONE CAN SEE YOU",
+      "CONTRAINTES :  TRICHROMIE, PASSAGES SECRETS",
+      "BIEVENUE DANS LE JEU",
+      "PHANTASMAGORIA",
+      "",
+    ];
+
+    const subtitleContainer = document.getElementById("script");
+    subtitles.forEach((subtitle, index) => {
+      setTimeout(() => {
+        subtitleContainer.innerHTML = subtitle;
+      }, 2700 * index);
+    });
+
+    const totalTime = subtitles.length * 2500;
+
     setTimeout(() => {
-      subtitleContainer.innerHTML = subtitle;
-    }, 5000 * index);
-  });
-}
+      button.style.display = "block";
+    }, totalTime);
+  }
 
-generateSubtitles();
+  function launchMusic() {
+    const audio = new Audio("/assets/Ouverture.mp3");
+    audio.loop = true;
+    audio.volume = 0.5;
+    audio.play();
+  }
+
+  button.addEventListener("click", () => {
+    let message = "Dernière chance pour alt + F4";
+    if (!clicked) {
+      button.innerHTML = message;
+      clicked = true;
+    } else {
+      window.location.href = "/pages/game.html";
+    }
+  });
+
+  generateSubtitles();
+});

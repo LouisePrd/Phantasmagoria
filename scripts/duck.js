@@ -6,8 +6,8 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 // Initialisation
 const scene = new THREE.Scene();
 const renderer = new THREE.WebGLRenderer({ antialias: true });
-var mixer = undefined;
-var Player_anim_IDLE = undefined;
+let mixer = undefined;
+let Player_anim_IDLE = undefined;
 
 const particleGeometry = new THREE.BufferGeometry();
 const particleCount = 150;
@@ -15,7 +15,15 @@ const positions = new Float32Array(particleCount * 3);
 
 let textMesh;
 let textScale = 1.0;
-var duck = undefined;
+let duck = undefined;
+let duckMini = false;
+let dialogEnded = false;
+
+let tabSubtitles = [
+  "Marcel : Alors comme ça, tu as osé t'aventurer dans mon jeu ?",
+  "Marcel : Tu es bien courageux, ou bien inconscient.",
+  "Marcel : Laisse-moi te faire regretter ta décision.",
+];
 
 const gltfLoader = new GLTFLoader();
 gltfLoader.load("/assets/duck.glb", function (gltf) {
@@ -23,17 +31,16 @@ gltfLoader.load("/assets/duck.glb", function (gltf) {
   Player_anim_IDLE = mixer.clipAction(gltf.animations[1]);
   Player_anim_IDLE.play();
   duck = gltf.scene;
-  duck.position.set(0, 0, 0);
+  duck.position.set(0, -0.4, 0);
   duck.scale.set(0.4, 0.4, 0.4);
   duck.rotation.y = 1.5;
   scene.add(duck);
 
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 3; i++) {
     setTimeout(() => {
-      duck.rotation.y += 0.25;
-    }, 1500 * i);
+      duck.rotation.y += 0.33;
+    }, 1400 * i);
   }
-  
 });
 
 for (let i = 0; i < particleCount * 3; i++) {
@@ -57,11 +64,12 @@ const particles = new THREE.Points(particleGeometry, particleMaterial);
 scene.add(particles);
 
 renderer.setClearColor(0x2b3059);
-renderer.setSize(window.innerWidth, window.innerHeight - 50);
+let sizeAdjust = window.innerHeight - 150;
+renderer.setSize(window.innerWidth, sizeAdjust);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-document.body.appendChild(renderer.domElement);
+document.getElementById("canvasContainer").appendChild(renderer.domElement);
 
-const aspect = window.innerWidth / window.innerHeight;
+const aspect = window.innerWidth / sizeAdjust;
 const camera = new THREE.OrthographicCamera(
   -aspect * 1.5, // Left
   aspect * 1.5, // Right
@@ -77,71 +85,83 @@ camera.position.set(0, 0, 1);
 camera.lookAt(0, 0, 0);
 scene.add(camera);
 
-const light = new THREE.DirectionalLight(0xffffff, 1);
-light.position.set(2, 2, 5);
-scene.add(light);
-
-const ambientLight = new THREE.AmbientLight(0x404040);
-scene.add(ambientLight);
+const pointlight = new THREE.PointLight(0xd63131, 10);
+pointlight.position.set(0, -2, 2);
+scene.add(pointlight);
 
 const loader = new FontLoader();
 loader.load("/fonts/Nopa1_Regular.json", (font) => {
   const textGeometry = new TextGeometry("phantasmagoria", {
     font: font,
-    size: 0.8,
+    size: 0.5,
     height: 0.3,
     curveSegments: 32,
     bevelEnabled: false,
   });
-
-  textGeometry.center();
-  const textMaterial = new THREE.MeshStandardMaterial({
-    color: 0xd05cbf,
-    side: THREE.DoubleSide,
-    roughness: 0.2,
-  });
-
-  textMesh = new THREE.Mesh(textGeometry, textMaterial);
-  textMesh.position.set(0, 1.5, 1);
-  scene.add(textMesh);
 });
 
 const clock = new THREE.Clock();
 function animate() {
   requestAnimationFrame(animate);
-  particles.rotation.y += 0.002;
+  if (duckMini === false) {
+    particles.rotation.y += 0.01;
+  } else {
+    particles.rotation.y += 0.002;
+  }
   if (textScale > 0.3 && textMesh) {
-    textScale -= 0.005;
+    textScale -= 0.015;
     textMesh.scale.set(textScale, textScale, textScale);
+    let progress = (textScale - 0.3) / (1 - 0.3);
+    let maxRotation = Math.PI / 1.5;
+    textMesh.rotation.z = progress * maxRotation;
   }
 
   if (mixer) {
     mixer.update(clock.getDelta());
   }
-
   renderer.render(scene, camera);
 }
 
-function generateSubtitles() {
-  const subtitles = [
-    "A series of real or imaginary images",
-    "like those seen in a dream.",
-    "A constantly changing scene composed",
-    "of elements from various sources.",
-    "A bizarre or fantastic combination,",
-    "collection, or assemblage.",
-  ];
+document.addEventListener("click", () => {
+  if (duck && !duckMini && dialogEnded) {
+    scene.remove(duck);
+    const texture = new THREE.TextureLoader().load("/assets/marcel.png");
+    texture.colorSpace = THREE.SRGBColorSpace;
 
-  const subtitleContainer = document.getElementById("script");
-  subtitles.forEach((subtitle, index) => {
-    setTimeout(() => {
-      subtitleContainer.innerHTML = subtitle;
-    }, 5000 * index);
-  });
+    const geometry = new THREE.PlaneGeometry(1, 1);
+    const material = new THREE.MeshBasicMaterial({
+      map: texture,
+      transparent: true,
+      roughness: 0.8,
+      side: THREE.DoubleSide,
+    });
+    const plane = new THREE.Mesh(geometry, material);
+    plane.position.set(0, -0.4, 0);
+    plane.scale.set(1, 1.8, 1);
+    scene.add(plane);
+    duckMini = true;
+  }
+});
+
+if (duckMini === false) {
+  let subtitleContainer = document.getElementById("scriptInGame");
+  setTimeout(() => {
+    tabSubtitles.forEach((subtitle, index) => {
+      setTimeout(() => {
+        subtitleContainer.innerHTML = subtitle;
+        subtitleContainer.classList.add("show");
+      }, 4000 * index);
+    });
+  }, 2000);
+
+  let totalTime = tabSubtitles.length * 2500;
+
+  setTimeout(() => {
+    dialogEnded = true;
+  }, totalTime);
 }
 
 animate();
-generateSubtitles();
 
 // Resize
 window.addEventListener("resize", () => {
