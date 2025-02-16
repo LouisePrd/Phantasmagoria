@@ -11,6 +11,7 @@
   "description": "",
   "dependencies": {
     "fast-simplex-noise": "^4.0.0",
+    "gsap": "^3.12.7",
     "open-simplex-noise": "^2.5.0",
     "simplex-noise": "^4.0.3",
     "three": "^0.173.0"
