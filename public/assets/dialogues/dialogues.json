@@ -1,0 +1,24 @@
+{
+    "marcel": [
+        "Marcel : Alors comme ça, tu as osé t'aventurer dans mon jeu ?",
+        "Marcel : Tu es bien courageux, ou bien inconscient.",
+        "Marcel : Laisse-moi te faire regretter ta décision.",
+        "Marcel : Vraiment, tu ne sais pas dans quoi tu t'es embarqué.",
+        "Marcel : Tu vas voir ce que je te réserve.",
+        "Marcel : Cliquer sur ce bouton était une erreur."
+    ],
+    "marcel-petit": [
+        "Marcel : ??????",
+        "Marcel : Qu'est-ce que tu m'as fait ?",
+        "Marcel : Pourquoi je ne peux plus bouger ?",
+        "Marcel : Attend... C'est toi qui a fait ça ?",
+        "Marcel : Tu as osé me réduire à l'état de Marcel Petit ?",
+        "Marcel : On va essayer un truc...",
+        "Marcel : ...",
+        "Marcel : Appuie sur les touches fléchées pour me déplacer."
+    ],
+    "marcel-move": [
+        "Marcel : Oh wow ok, ça marche !",
+        "Marcel : Tu as réussi à me faire bouger !"
+    ]
+}
