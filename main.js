@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   const button = document.getElementById("button");
   let clicked = false;
+  const audio = new Audio("/assets/Ouverture.mp3");
 
   function generateSubtitles() {
     launchMusic();
@@ -21,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }, 2700 * index);
     });
 
-    const totalTime = subtitles.length * 2500;
+    const totalTime = subtitles.length * 2300;
 
     setTimeout(() => {
       button.style.display = "block";
@@ -29,7 +30,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function launchMusic() {
-    const audio = new Audio("/assets/Ouverture.mp3");
     audio.loop = true;
     audio.volume = 0.5;
     audio.play();
@@ -41,7 +41,19 @@ document.addEventListener("DOMContentLoaded", () => {
       button.innerHTML = message;
       clicked = true;
     } else {
-      window.location.href = "/pages/game.html";
+      for (let i = 0; i < 10; i++) {
+        setTimeout(() => {
+          if (audio.volume > 0.1) {
+            audio.volume = Math.max(0, audio.volume - 0.1);
+          } else {
+            audio.volume = 0;
+            audio.pause();
+          }
+        }, 250 * i);
+      }
+      setTimeout(() => {
+        window.location.href = "/pages/game.html";
+      }, 2000);
     }
   });
 

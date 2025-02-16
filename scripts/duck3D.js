@@ -43,7 +43,6 @@ async function initDialogues(dialogueKey) {
     return;
   }
 
-  console.log("Dialogues chargés :", subtitles);
   displaySubtitles(subtitles);
 
   let totalTime = subtitles.length * 2500;
