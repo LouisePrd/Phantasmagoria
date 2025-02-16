@@ -1,6 +1,3 @@
 [build]
   command = "npx vite build"
-  publish = "."
-
-[functions]
-  directory = "netlify/functions"
+  publish = "dist"
